@@ -32,6 +32,28 @@
 - **BR-101 (Совместимость):** Поле `min_link_version` в SkillPack должно быть меньше или равно текущей версии `neuro_version` пользователя.
 - **BR-102 (Валидация):** Перед началом Sync система должна получить аппаратный хеш-код импланта для подтверждения его подлинности.
 - **BR-103 (Ограничение):** Один пользователь не может одновременно запускать более двух процессов Sync (ограничение пропускной способности коры головного мозга).
+```mermaid
+sequenceDiagram
+    participant User
+    participant API
+    participant DB
+    participant Device
+
+    User->>API: POST /sync/start (SkillID)
+    API->>DB: Get Skill Requirements (min_version)
+    DB-->>API: min_version: v2.0
+    
+    API->>Device: Check Hardware Version
+    Device-->>API: Current version: v1.0
+    
+    Note over API: Validation BR-001
+    
+    alt version < min_version
+        API-->>User: 422 Unprocessable Entity (Incompatible)
+    else version >= min_version
+        API-->>User: 202 Accepted (Sync Started)
+    end
+```
 
 # Техническая документация
 - [Спецификация OpenAPI (Swagger)](ссылка_на_файл) — описание всех эндпоинтов и моделей данных.
